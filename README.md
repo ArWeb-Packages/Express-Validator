@@ -47,7 +47,7 @@ npm install @arweb/express-validator
 | between         | ❌ No    | { validator: "between", message: "Your message", options: { min: 5, max: 9 } }                                                         |
 | integer         | ❌ No    | { validator: "integer", message: "Your message" }                                                                                      |
 | positive        | ❌ No    | { validator: "positive", message: "Your message" }                                                                                     |
-| negetive        | ❌ No    | { validator: "negetive", message: "Your message" }                                                                                     |
+| negative        | ❌ No    | { validator: "negative", message: "Your message" }                                                                                     |
 | float           | ❌ No    | { validator: "float", message: "Your message" }                                                                                        |
 | numeric         | ❌ No    | { validator: "numeric", message: "Your message" }                                                                                      |
 | digit           | ❌ No    | { validator: "digit", message: "Your message" }                                                                                        |

@@ -1,6 +1,6 @@
 {
   "name": "@arweb/express-validator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Custom express validator with DB checks",
   "type": "module",
   "main": "src/index.js",
