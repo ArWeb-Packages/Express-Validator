@@ -203,13 +203,19 @@ export const defaultRules = {
     }
   },
 
-  ip: (value) => {
+  ip: (value, { type }) => {
     if (!value) return true;
-    return (
-      /^(25[0-5]|2[0-4]\d|[01]?\d\d?)\.([0-9]{1,3}\.){2}[0-9]{1,3}$/.test(
-        value
-      ) || /^[a-fA-F0-9:]+$/.test(value)
-    ); // IPv6
+    const ipv4Regex =
+      /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/;
+
+    const ipv6Regex =
+      /^(([0-9a-fA-F]{1,4}:){7}([0-9a-fA-F]{1,4}|:))|(([0-9a-fA-F]{1,4}:){1,7}:)|(::([0-9a-fA-F]{1,4}:){0,5}([0-9a-fA-F]{1,4}))$/;
+
+    if (type === "ip4") {
+      return ipv4Regex.test(value);
+    } else {
+      return ipv6Regex.test(value);
+    }
   },
 
   domain: (value) => {
