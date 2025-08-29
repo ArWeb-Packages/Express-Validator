@@ -57,7 +57,7 @@ npm install @arweb/express-validator
 | after_date      | ❌ No    | { validator: "after_date", message: "Your message", options: { date_val: "yyyy-mm-dd" } }                                              |
 | between_dates   | ❌ No    | { validator: "between_dates", message: "Your message", options: { start_date: "yyyy-mm-dd", end_date: "yyyy-mm-dd" } }                 |
 | url             | ❌ No    | { validator: "url", message: "Your message" }                                                                                          |
-| ip              | ❌ No    | { validator: "ip", message: "Your message" }                                                                                           |
+| ip              | ❌ No    | { validator: "ip", message: "Your message", options: { type: "ip4/ip6" } }                                                             |
 | domain          | ❌ No    | { validator: "domain", message: "Your message" }                                                                                       |
 | mac_address     | ❌ No    | { validator: "mac_address", message: "Your message" }                                                                                  |
 | file_required   | ❌ No    | { validator: "file_required", message: "Your message" }                                                                                |
