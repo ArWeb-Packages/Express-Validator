@@ -1,4 +1,4 @@
-# 🚀 express-validator-custom
+# 🚀 Express-validator
 
 A lightweight **custom validator for Express.js** that supports:
 
