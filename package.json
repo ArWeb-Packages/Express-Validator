@@ -1,0 +1,28 @@
+{
+  "name": "@arweb/express-validator",
+  "version": "1.0.1",
+  "description": "Custom express validator with DB checks",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "node --test",
+    "build": "echo 'No build step needed'",
+    "release": "npm publish --access public"
+  },
+  "keywords": [
+    "express",
+    "validation",
+    "mysql",
+    "mongodb"
+  ],
+  "author": "Soumyanjan Dey",
+  "license": "MIT",
+  "devDependencies": {
+    "mongodb": "^6.19.0",
+    "mysql2": "^3.14.3"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "sharp": "^0.34.3"
+  }
+}
