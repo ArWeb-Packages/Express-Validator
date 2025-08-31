@@ -32,30 +32,38 @@ npm install @arweb/express-validator
 | not_equal       | ❌ No    | { validator: "not_equal", message: "Your message", options: { disallow: "Some Text" } }                                                |
 | uuid            | ❌ No    | { validator: "uuid", message: "Your message" }                                                                                         |
 | slug            | ❌ No    | { validator: "slug", message: "Your message" }                                                                                         |
-| regex           | ❌ No    | { validator: "regex", message: "Your message", options: { pattern: "Pattern", flags: "i" } }                                           |
+| regex           | ❌ No    | { validator: "regex", message: "Your message", options: { pattern: "Pattern", flags: "Give the flag of pattern" } }                    |
+| contain         | ❌ No    | { validator: "contain", message: "Your message", options: { element: "Some text" } }                                                   |
+| not_contain     | ❌ No    | { validator: "not_contain", message: "Your message", options: { element: "Some text" } }                                               |
+| lowercase       | ❌ No    | { validator: "lowercase", message: "Your message"}                                                                                     |
+| uppercase       | ❌ No    | { validator: "uppercase", message: "Your message" }                                                                                    |
 | min_length      | ❌ No    | { validator: "min_length", message: "Your message", options: { length: 3 } }                                                           |
 | max_length      | ❌ No    | { validator: "max_length", message: "Your message", options: { length: 15 } }                                                          |
+| exact_length    | ❌ No    | { validator: "exact_length", message: "Your message", options: { length: 5 } }                                                         |
 | starts_with     | ❌ No    | { validator: "starts_with", message: "Your message", options: { prefix: "Some Text" } }                                                |
 | ends_with       | ❌ No    | { validator: "ends_with", message: "Your message", options: { suffix: "Some Text" } }                                                  |
-| contains        | ❌ No    | { validator: "contains", message: "Your message", options: { substr: "Some Text" } }                                                   |
-| in              | ❌ No    | { validator: "in", message: "Your message", options: { list: ["A","B","C"] } }                                                         |
-| not_in          | ❌ No    | { validator: "not_in", message: "Your message", options: { list: ["A","B","C"] } }                                                     |
+| json            | ❌ No    | { validator: "json", message: "Your message" }                                                                                         |
+| array           | ❌ No    | { validator: "array", message: "Your message" }                                                                                        |
 | gt              | ❌ No    | { validator: "gt", message: "Your message", options: { val: 3 } }                                                                      |
 | gte             | ❌ No    | { validator: "gte", message: "Your message", options: { val: 3 } }                                                                     |
 | lt              | ❌ No    | { validator: "lt", message: "Your message", options: { val: 3 } }                                                                      |
 | lte             | ❌ No    | { validator: "lte", message: "Your message", options: { val: 3 } }                                                                     |
-| between         | ❌ No    | { validator: "between", message: "Your message", options: { min: 5, max: 9 } }                                                         |
+| number_between  | ❌ No    | { validator: "number_between", message: "Your message", options: { min: 5, max: 9 } }                                                  |
 | integer         | ❌ No    | { validator: "integer", message: "Your message" }                                                                                      |
 | positive        | ❌ No    | { validator: "positive", message: "Your message" }                                                                                     |
 | negative        | ❌ No    | { validator: "negative", message: "Your message" }                                                                                     |
 | float           | ❌ No    | { validator: "float", message: "Your message" }                                                                                        |
 | numeric         | ❌ No    | { validator: "numeric", message: "Your message" }                                                                                      |
-| digit           | ❌ No    | { validator: "digit", message: "Your message" }                                                                                        |
-| json            | ❌ No    | { validator: "json", message: "Your message" }                                                                                         |
+| boolean         | ❌ No    | { validator: "boolean", message: "Your message" }                                                                                      |
+| is_true         | ❌ No    | { validator: "is_true", message: "Your message" }                                                                                      |
+| is_false        | ❌ No    | { validator: "is_false", message: "Your message" }                                                                                     |
 | date            | ❌ No    | { validator: "date", message: "Your message" }                                                                                         |
 | before_date     | ❌ No    | { validator: "before_date", message: "Your message", options: { date_val: "yyyy-mm-dd" } }                                             |
 | after_date      | ❌ No    | { validator: "after_date", message: "Your message", options: { date_val: "yyyy-mm-dd" } }                                              |
 | between_dates   | ❌ No    | { validator: "between_dates", message: "Your message", options: { start_date: "yyyy-mm-dd", end_date: "yyyy-mm-dd" } }                 |
+| future_date     | ❌ No    | { validator: "future_date", message: "Your message" }                                                                                  |
+| past_date       | ❌ No    | { validator: "past_date", message: "Your message" }                                                                                    |
+| iso_date        | ❌ No    | { validator: "iso_date", message: "Your message" }                                                                                     |
 | url             | ❌ No    | { validator: "url", message: "Your message" }                                                                                          |
 | ip              | ❌ No    | { validator: "ip", message: "Your message", options: { type: "ip4/ip6" } }                                                             |
 | domain          | ❌ No    | { validator: "domain", message: "Your message" }                                                                                       |

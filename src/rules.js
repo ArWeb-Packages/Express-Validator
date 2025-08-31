@@ -59,16 +59,41 @@ export const defaultRules = {
     return pattern.test(value);
   },
 
+  contain: (value, { element }) => {
+    if (!value) return true;
+    return value.includes(element);
+  },
+
+  not_contain: (value, { element }) => {
+    if (!value) return true;
+    return !value.includes(element);
+  },
+
   /**************************************** BASIC RULES **************************************** */
 
   /**************************************** STRING RULES **************************************** */
+
+  lowercase: (value) => {
+    if (!value) return true;
+    return value === value.toLowerCase();
+  },
+
+  uppercase: (value) => {
+    if (!value) return true;
+    return value === value.toUpperCase();
+  },
+
   min_length: (value, { length }) => {
     if (value === undefined || value === null || value === "") return true;
-    return typeof value === "string" && value.length >= length;
+    return value.length >= length;
   },
   max_length: (value, { length }) => {
     if (value === undefined || value === null || value === "") return true;
-    return typeof value === "string" && value.length <= length;
+    return value.length <= length;
+  },
+  exact_length: (value, { length }) => {
+    if (value === undefined || value === null || value === "") return true;
+    return value.length === length;
   },
   starts_with: (value, { prefix }) => {
     if (!value) return true;
@@ -78,20 +103,27 @@ export const defaultRules = {
     if (!value) return true;
     return value.endsWith(suffix);
   },
-  contains: (value, { substr }) => {
-    if (!value) return true;
-    return value.includes(substr);
-  },
-  in: (value, { list }) => {
-    if (!value) return true;
-    return list.includes(value);
-  },
-  not_in: (value, { list }) => {
-    if (!value) return true;
-    return !list.includes(value);
-  },
 
   /**************************************** STRING RULES **************************************** */
+
+  /*********************************** ARRAY AND JSON RULES *********************************** */
+
+  json: (value) => {
+    if (!value) return true;
+    try {
+      JSON.parse(value);
+      return true;
+    } catch {
+      return false;
+    }
+  },
+
+  array: (value) => {
+    if (!value) return true;
+    return Array.isArray(value);
+  },
+
+  /*********************************** ARRAY AND JSON RULES *********************************** */
 
   /**************************************** NUMERIC RULES **************************************** */
 
@@ -115,7 +147,7 @@ export const defaultRules = {
     return +value <= val;
   },
 
-  between: (value, { min, max }) => {
+  number_between: (value, { min, max }) => {
     if (value === undefined || value === null || value === "") return true;
     if (!isNaN(value)) return +value >= min && +value <= max;
     return false;
@@ -136,11 +168,6 @@ export const defaultRules = {
     return +value < 0;
   },
 
-  digit: (value) => {
-    if (value === undefined || value === null || value === "") return true;
-    return /^\d+$/.test(value);
-  },
-
   float: (value) => {
     if (value === undefined || value === null || value === "") return true;
     return /^-?\d+(\.\d+)?$/.test(value);
@@ -153,19 +180,24 @@ export const defaultRules = {
 
   /**************************************** NUMERIC RULES **************************************** */
 
-  /**************************************** TYPE RULES **************************************** */
+  /**************************************** BOOLEAN RULES **************************************** */
 
-  json: (value) => {
-    if (!value) return true;
-    try {
-      JSON.parse(value);
-      return true;
-    } catch {
-      return false;
-    }
+  boolean: (value) => {
+    if (value === undefined || value === null || value === "") return true;
+    return typeof value === "boolean";
   },
 
-  /**************************************** TYPE RULES **************************************** */
+  is_true: (value) => {
+    if (value === undefined || value === null || value === "") return true;
+    return value === true;
+  },
+
+  is_false: (value) => {
+    if (value === undefined || value === null || value === "") return true;
+    return value === false;
+  },
+
+  /**************************************** BOOLEAN RULES **************************************** */
 
   /**************************************** DATE AND TIME RULES **************************************** */
 
@@ -190,6 +222,21 @@ export const defaultRules = {
     return d >= new Date(start_date) && d <= new Date(end_date);
   },
 
+  future_date: (value) => {
+    if (!value) return true;
+    return new Date(value) > new Date();
+  },
+
+  past_date: (value) => {
+    if (!value) return true;
+    return new Date(value) < new Date();
+  },
+
+  iso_date: (value) => {
+    if (!value) return true;
+    return /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(value);
+  },
+
   /**************************************** DATE AND TIME RULES **************************************** */
 
   /**************************************** WEB AND NETWORK RULES **************************************** */
@@ -203,8 +250,9 @@ export const defaultRules = {
     }
   },
 
-  ip: (value, { type }) => {
+  ip: (value, { type } = {}) => {
     if (!value) return true;
+
     const ipv4Regex =
       /^(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)(\.(25[0-5]|2[0-4]\d|1\d{2}|[1-9]?\d)){3}$/;
 
@@ -213,9 +261,13 @@ export const defaultRules = {
 
     if (type === "ip4") {
       return ipv4Regex.test(value);
-    } else {
+    }
+
+    if (type === "ip6") {
       return ipv6Regex.test(value);
     }
+
+    return ipv4Regex.test(value) || ipv6Regex.test(value);
   },
 
   domain: (value) => {
@@ -287,13 +339,10 @@ export const defaultRules = {
   file_dimensions: async (file, { width, height }) => {
     if (!file) return true;
     if (!file.mimetype.startsWith("image/")) return true;
-
     try {
       const metadata = await sharp(file.buffer).metadata();
-
       if (width && metadata.width < width) return false;
       if (height && metadata.height < height) return false;
-
       return true;
     } catch (err) {
       return false;
