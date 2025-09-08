@@ -1,0 +1,40 @@
+{
+  "name": "@arweb/express-validate-rules",
+  "version": "1.0.0",
+  "description": "Custom express validator with DB checks",
+  "main": "cjs/index.js",
+  "module": "src/index.js",
+  "type": "module",
+  "exports": {
+    "import": "./src/index.js",
+    "require": "./cjs/index.js"
+  },
+  "files": [
+    "src",
+    "cjs"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "build": "node build.js",
+    "release": "npm run build && npm publish --access public"
+  },
+  "keywords": [
+    "express",
+    "validation",
+    "mysql",
+    "mongodb"
+  ],
+  "author": {
+    "name": "Soumyanjan Dey",
+    "email": "arwebcs@gmail.com"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "mongodb": "^6.19.0",
+    "mysql2": "^3.14.4"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "sharp": "^0.34.3"
+  }
+}
