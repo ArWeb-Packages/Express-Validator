@@ -165,41 +165,75 @@ export const defaultRules = {
       !mandatory || (file !== undefined && file !== null)
   ),
 
-  file_mime: wrapAsync(
-    (file, { types }) => isEmpty(file) || types.includes(file.mimetype)
-  ),
+  file_mime: wrapAsync((file, { types }) => {
+    if (isEmpty(file)) return true;
+
+    if (Array.isArray(file)) {
+      return file.every((f) => types.includes(f.mimetype));
+    }
+
+    return types.includes(file.mimetype);
+  }),
 
   file_storage_size: wrapAsync((file, { size_bytes, size_type = "min" }) => {
     if (isEmpty(file)) return true;
-    if (size_type === "min") return file.size >= size_bytes;
-    if (size_type === "max") return file.size <= size_bytes;
-    return file.size === size_bytes;
+
+    const checkSize = (f) => {
+      if (size_type === "min") return f.size >= size_bytes;
+      if (size_type === "max") return f.size <= size_bytes;
+      return f.size === size_bytes;
+    };
+
+    if (Array.isArray(file)) {
+      return file.every(checkSize);
+    }
+
+    return checkSize(file);
   }),
 
-  file_extension: wrapAsync(
-    (file, { extension }) =>
-      isEmpty(file) ||
-      extension.some((ext) => file.originalname.toLowerCase().endsWith(ext))
-  ),
+  file_extension: wrapAsync((file, { extension }) => {
+    if (isEmpty(file)) return true;
+
+    const checkExt = (f) =>
+      extension.some((ext) => f.originalname.toLowerCase().endsWith(ext));
+
+    if (Array.isArray(file)) {
+      return file.every(checkExt);
+    }
+
+    return checkExt(file);
+  }),
 
   image_dimensions: async (
     file,
     { width, height, width_type = "min", height_type = "min" } = {}
   ) => {
-    if (isEmpty(file) || !file.mimetype.startsWith("image/")) return true;
-    const metadata = await sharp(file.buffer).metadata();
+    if (isEmpty(file)) return true;
 
-    let valid = true;
-    if (width) {
-      if (width_type === "min") valid = valid && metadata.width >= width;
-      if (width_type === "max") valid = valid && metadata.width <= width;
-      if (width_type === "exact") valid = valid && metadata.width === width;
+    const checkDimensions = async (f) => {
+      if (!f.mimetype.startsWith("image/")) return true;
+      const metadata = await sharp(f.buffer).metadata();
+
+      let valid = true;
+      if (width) {
+        if (width_type === "min") valid = valid && metadata.width >= width;
+        if (width_type === "max") valid = valid && metadata.width <= width;
+        if (width_type === "exact") valid = valid && metadata.width === width;
+      }
+      if (height) {
+        if (height_type === "min") valid = valid && metadata.height >= height;
+        if (height_type === "max") valid = valid && metadata.height <= height;
+        if (height_type === "exact")
+          valid = valid && metadata.height === height;
+      }
+      return valid;
+    };
+
+    if (Array.isArray(file)) {
+      const results = await Promise.all(file.map(checkDimensions));
+      return results.every(Boolean);
     }
-    if (height) {
-      if (height_type === "min") valid = valid && metadata.height >= height;
-      if (height_type === "max") valid = valid && metadata.height <= height;
-      if (height_type === "exact") valid = valid && metadata.height === height;
-    }
-    return valid;
+
+    return checkDimensions(file);
   },
 };
