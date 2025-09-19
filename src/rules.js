@@ -160,10 +160,19 @@ export const defaultRules = {
   },
 
   /**************************************** FILE RULES **************************************** */
-  file_required: wrapAsync(
-    (file, { mandatory = true } = {}) =>
-      !mandatory || (file !== undefined && file !== null)
-  ),
+  file_required: wrapAsync((files) => {
+    if (!files) return false; // null, undefined, empty string
+
+    if (files instanceof FileList) {
+      return files.length > 0; // true if at least one file
+    }
+
+    if (Array.isArray(files)) {
+      return files.length > 0; // true if at least one file
+    }
+
+    return false; // anything else is invalid
+  }),
 
   file_mime: wrapAsync((file, { types }) => {
     if (isEmpty(file)) return true;
