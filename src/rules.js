@@ -72,13 +72,22 @@ export const defaultRules = {
     return pattern.test(value);
   }),
 
-  contain: wrapAsync(
-    (value, { element }) => isEmpty(value) || value.includes(element)
-  ),
+  contain: wrapAsync((value, { element }) => {
+    if (isEmpty(value)) return true;
+    if (Array.isArray(element)) {
+      return element.includes(value);
+    }
+    return value.includes(element);
+  }),
 
-  not_contain: wrapAsync(
-    (value, { element }) => isEmpty(value) || !value.includes(element)
-  ),
+  not_contain: wrapAsync((value, { element }) => {
+    if (isEmpty(value)) return true;
+
+    if (Array.isArray(element)) {
+      return !element.includes(value);
+    }
+    return !value.includes(element);
+  }),
 
   /**************************************** STRING RULES **************************************** */
   string_case: wrapAsync((value, { case_type = "lower" }) => {
