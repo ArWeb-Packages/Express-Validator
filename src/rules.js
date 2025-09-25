@@ -14,6 +14,22 @@ export const defaultRules = {
   /**************************************** BASIC RULES **************************************** */
   required: wrapAsync((value) => !isEmpty(value)),
 
+  required_if: wrapAsync((value, { other, val }, data = {}) => {
+    if (!data || typeof data !== "object") {
+      throw new Error("required_if validator needs full data context");
+    }
+
+    const otherValue = data[other];
+    const shouldRequire =
+      val !== undefined ? otherValue == val : !isEmpty(otherValue);
+
+    if (shouldRequire) {
+      return !isEmpty(value);
+    }
+
+    return true;
+  }),
+
   email: wrapAsync(
     (value) => isEmpty(value) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
   ),
