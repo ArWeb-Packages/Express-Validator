@@ -23,8 +23,16 @@ export const defaultRules = {
     const shouldRequire =
       val !== undefined ? otherValue == val : !isEmpty(otherValue);
 
+    // custom check for string OR array
+    const isValueEmpty = (val) => {
+      if (val === null || val === undefined) return true;
+      if (typeof val === "string") return val.trim().length === 0;
+      if (Array.isArray(val)) return val.length === 0;
+      return isEmpty(val); // fallback for objects, numbers, etc.
+    };
+
     if (shouldRequire) {
-      return !isEmpty(value);
+      return !isValueEmpty(value);
     }
 
     return true;

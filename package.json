@@ -1,6 +1,6 @@
 {
   "name": "@arweb/express-validate-rules",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Custom express validator with DB checks",
   "main": "cjs/index.js",
   "module": "src/index.js",
