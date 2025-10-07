@@ -198,9 +198,9 @@ export const defaultRules = {
 
     if (Array.isArray(files)) {
       return files.length > 0;
+    } else {
+      return files.size > 0;
     }
-
-    return false;
   }),
 
   file_mime: wrapAsync((file, { types }) => {
