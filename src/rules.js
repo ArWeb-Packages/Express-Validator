@@ -42,6 +42,8 @@ export const defaultRules = {
     (value) => isEmpty(value) || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
   ),
 
+  url: wrapAsync((value) => isEmpty(value) || /^(?:(?:https?|ftp):\/\/)?(?:www\.)?[a-z0-9-]+(?:\.[a-z0-9-]+)+[^\s]*$/i.test(value)),
+
   alpha: wrapAsync((value) => isEmpty(value) || /^[A-Za-z]+$/.test(value)),
 
   alphanumeric: wrapAsync(
