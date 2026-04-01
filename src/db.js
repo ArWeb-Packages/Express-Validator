@@ -19,6 +19,28 @@ const buildWhereClause = (conditions, params = [], negate = false) => {
   return sqlParts.join(" ").trim();
 };
 
+const buildPostgresWhereClause = (conditions, params = [], negate = false) => {
+  let sqlParts = [];
+
+  for (let i = 0; i < conditions.length; i++) {
+    const cond = conditions[i];
+    const logic = i === 0 ? "" : (cond.logic || "AND").toUpperCase();
+
+    if (cond.group && Array.isArray(cond.group)) {
+      const groupClause = buildPostgresWhereClause(cond.group, params, negate);
+      sqlParts.push(`${logic} (${groupClause})`);
+    } else if (cond.field && cond.value !== undefined) {
+      params.push(cond.value);
+      const paramIndex = `$${params.length}`;
+      sqlParts.push(`${logic} "${cond.field}" ${negate ? "!=" : "="} ${paramIndex}`);
+    } else {
+      throw new Error("Invalid condition object: must have field/value or group");
+    }
+  }
+
+  return sqlParts.join(" ").trim();
+};
+
 const buildMongoFilter = (conditions, negate = false) => {
   const andClauses = [];
   const orClauses = [];
@@ -66,6 +88,30 @@ const executeExists = async (dbType, collection, conditions = [], exclude = [], 
       throw new Error("Database error during exists check");
     }
   }
+
+
+  // ✅ POSTGRES
+if (dbType === "postgres") {
+  const params = [];
+  const whereClause = buildPostgresWhereClause(conditions, params);
+
+  let finalClause = whereClause || "TRUE";
+
+  if (exclude && exclude.length > 0) {
+    const excludeClause = buildPostgresWhereClause(exclude, params, true);
+    finalClause += ` AND (${excludeClause})`;
+  }
+
+  const sql = `SELECT COUNT(*) AS cnt FROM "${collection}" WHERE ${finalClause}`;
+
+  try {
+    const result = await dbClient.query(sql, params);
+    return parseInt(result.rows[0].cnt, 10) > 0;
+  } catch (err) {
+    console.error("❌ Postgres exists check failed:", err);
+    throw new Error("Database error during exists check");
+  }
+}
 
   // ✅ MYSQL
   if (dbType === "mysql") {

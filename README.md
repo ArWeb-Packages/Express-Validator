@@ -4,7 +4,7 @@ A lightweight **custom validator for Express.js** that supports:
 
 - ✅ Simple rules
 - ✅ Stops at the **first error per field**
-- ✅ Works with **MongoDB** or **MySQL**
+- ✅ Works with **MongoDB** or **MySQL** or **PostGreSQL**
 - ✅ Async database checks
 
 ---

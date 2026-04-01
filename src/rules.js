@@ -203,7 +203,7 @@ export const defaultRules = {
 	not_exists: async (value, options, db) => {
 		if (isEmpty(value)) return true;
 		if (!dbChecks) throw new Error("Database not configured");
-		return dbChecks.notExists(value, options, db);
+		return dbChecks.not_exists(value, options, db);
 	},
 
 	/**************************************** FILE RULES **************************************** */
