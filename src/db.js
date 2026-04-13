@@ -1,3 +1,19 @@
+/***************************** HELPERS *****************************/
+
+// ✅ Format table for Postgres (FIX)
+const formatPostgresTable = (collection) => {
+  if (!collection) throw new Error("Collection is required");
+
+  if (collection.includes(".")) {
+    const [schema, table] = collection.split(".");
+    return `"${schema}"."${table}"`;
+  }
+
+  return `"${collection}"`;
+};
+
+/***************************** MYSQL WHERE *****************************/
+
 const buildWhereClause = (conditions, params = [], negate = false) => {
   let sqlParts = [];
 
@@ -19,6 +35,8 @@ const buildWhereClause = (conditions, params = [], negate = false) => {
   return sqlParts.join(" ").trim();
 };
 
+/***************************** POSTGRES WHERE *****************************/
+
 const buildPostgresWhereClause = (conditions, params = [], negate = false) => {
   let sqlParts = [];
 
@@ -32,7 +50,10 @@ const buildPostgresWhereClause = (conditions, params = [], negate = false) => {
     } else if (cond.field && cond.value !== undefined) {
       params.push(cond.value);
       const paramIndex = `$${params.length}`;
-      sqlParts.push(`${logic} "${cond.field}" ${negate ? "!=" : "="} ${paramIndex}`);
+
+      sqlParts.push(
+        `${logic} "${cond.field}" ${negate ? "!=" : "="} ${paramIndex}`
+      );
     } else {
       throw new Error("Invalid condition object: must have field/value or group");
     }
@@ -40,6 +61,8 @@ const buildPostgresWhereClause = (conditions, params = [], negate = false) => {
 
   return sqlParts.join(" ").trim();
 };
+
+/***************************** MONGO *****************************/
 
 const buildMongoFilter = (conditions, negate = false) => {
   const andClauses = [];
@@ -53,7 +76,10 @@ const buildMongoFilter = (conditions, negate = false) => {
       if (logic === "OR") orClauses.push(subFilter);
       else andClauses.push(subFilter);
     } else if (cond.field && cond.value !== undefined) {
-      const condition = { [cond.field]: negate ? { $ne: cond.value } : cond.value };
+      const condition = {
+        [cond.field]: negate ? { $ne: cond.value } : cond.value,
+      };
+
       if (logic === "OR") orClauses.push(condition);
       else andClauses.push(condition);
     }
@@ -63,17 +89,27 @@ const buildMongoFilter = (conditions, negate = false) => {
     return { $and: [...andClauses, { $or: orClauses }] };
   if (orClauses.length) return { $or: orClauses };
   if (andClauses.length) return { $and: andClauses };
+
   return {};
 };
 
-const executeExists = async (dbType, collection, conditions = [], exclude = [], dbClient) => {
+/***************************** CORE FUNCTION *****************************/
+
+const executeExists = async (
+  dbType,
+  collection,
+  conditions = [],
+  exclude = [],
+  dbClient
+) => {
   if (!Array.isArray(conditions) || conditions.length === 0) {
     throw new Error("exists/unique: 'conditions' must be a non-empty array");
   }
 
-  // ✅ MONGO
+  /************** MONGO **************/
   if (dbType === "mongo") {
     const mongoFilter = buildMongoFilter(conditions);
+
     if (exclude && exclude.length > 0) {
       const excludeFilter = buildMongoFilter(exclude, true);
       mongoFilter.$and = mongoFilter.$and || [];
@@ -81,7 +117,11 @@ const executeExists = async (dbType, collection, conditions = [], exclude = [], 
     }
 
     try {
-      const count = await dbClient.db().collection(collection).countDocuments(mongoFilter);
+      const count = await dbClient
+        .db()
+        .collection(collection)
+        .countDocuments(mongoFilter);
+
       return count > 0;
     } catch (err) {
       console.error("❌ Mongo exists check failed:", err);
@@ -89,35 +129,48 @@ const executeExists = async (dbType, collection, conditions = [], exclude = [], 
     }
   }
 
+  /************** POSTGRES (FIXED) **************/
+  if (dbType === "postgres") {
+    const params = [];
 
-  // ✅ POSTGRES
-if (dbType === "postgres") {
-  const params = [];
-  const whereClause = buildPostgresWhereClause(conditions, params);
+    const whereClause = buildPostgresWhereClause(conditions, params);
+    let finalClause = whereClause || "TRUE";
 
-  let finalClause = whereClause || "TRUE";
+    if (exclude && exclude.length > 0) {
+      const excludeClause = buildPostgresWhereClause(
+        exclude,
+        params,
+        true
+      );
+      finalClause += ` AND (${excludeClause})`;
+    }
 
-  if (exclude && exclude.length > 0) {
-    const excludeClause = buildPostgresWhereClause(exclude, params, true);
-    finalClause += ` AND (${excludeClause})`;
+    // ✅ FIX APPLIED HERE
+    const tableName = formatPostgresTable(collection);
+
+    const sql = `
+      SELECT COUNT(*)::int AS cnt
+      FROM ${tableName}
+      WHERE ${finalClause}
+    `;
+
+    try {
+      // console.log("SQL:", sql);
+      // console.log("PARAMS:", params);
+
+      const result = await dbClient.query(sql, params);
+      return result.rows[0].cnt > 0;
+    } catch (err) {
+      console.error("❌ Postgres exists check failed:", err);
+      throw new Error("Database error during exists check");
+    }
   }
 
-  const sql = `SELECT COUNT(*) AS cnt FROM "${collection}" WHERE ${finalClause}`;
-
-  try {
-    const result = await dbClient.query(sql, params);
-    return parseInt(result.rows[0].cnt, 10) > 0;
-  } catch (err) {
-    console.error("❌ Postgres exists check failed:", err);
-    throw new Error("Database error during exists check");
-  }
-}
-
-  // ✅ MYSQL
+  /************** MYSQL **************/
   if (dbType === "mysql") {
     const params = [];
-    const whereClause = buildWhereClause(conditions, params);
 
+    const whereClause = buildWhereClause(conditions, params);
     let finalClause = whereClause || "1=1";
 
     if (exclude && exclude.length > 0) {
@@ -140,16 +193,26 @@ if (dbType === "postgres") {
   return false;
 };
 
+/***************************** EXPORTS *****************************/
+
 export const dbChecks = {
   async exists(value, { collection, conditions, exclude }, db) {
     if (!db) throw new Error("Database not configured");
     if (!Array.isArray(conditions) || conditions.length === 0) return false;
-    return executeExists(db.type, collection, conditions, exclude || [], db.client);
+
+    return executeExists(
+      db.type,
+      collection,
+      conditions,
+      exclude || [],
+      db.client
+    );
   },
 
   async unique(value, { collection, conditions, exclude }, db) {
     if (!db) throw new Error("Database not configured");
     if (!Array.isArray(conditions) || conditions.length === 0) return true;
+
     const exists = await executeExists(
       db.type,
       collection,
@@ -157,12 +220,14 @@ export const dbChecks = {
       exclude || [],
       db.client
     );
+
     return !exists;
   },
 
   async not_exists(value, { collection, conditions, exclude }, db) {
     if (!db) throw new Error("Database not configured");
     if (!Array.isArray(conditions) || conditions.length === 0) return true;
+
     const exists = await executeExists(
       db.type,
       collection,
@@ -170,6 +235,7 @@ export const dbChecks = {
       exclude || [],
       db.client
     );
-    return !exists; 
+
+    return !exists;
   },
 };
